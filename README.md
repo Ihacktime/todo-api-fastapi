@@ -18,41 +18,31 @@ Auth:
 Header: Authorization: Bearer <token>
 
 Todos:
-- GET /todos · POST /todos · GET /todos/{id} · PATCH /todos/{id} · DELETE /todos/{id}
+- GET /todos — list current user’s todos
+- POST /todos — JSON { "title": "Buy milk" }
+- GET /todos/{id} — get one
+- PATCH /todos/{id}?done=true (or &title=New+title) — update
+- DELETE /todos/{id} — delete
 
-  Env (see example.env):
-  SECRET_KEY (change in prod) · DATABASE_URL (default sqlite:///./app.db)
 
-  Stack
+30-second curl test
+# Register
+curl -s -X POST http://127.0.0.1:8000/auth/register -H "Content-Type: application/json" \
+ -d '{"username":"ali","password":"pass"}'
 
-FastAPI · Uvicorn · SQLAlchemy 2.x · Passlib (bcrypt) · python-jose
-MD
+# Login (get token)
+TOKEN=$(curl -s -X POST http://127.0.0.1:8000/auth/login \
+ -H "Content-Type: application/x-www-form-urlencoded" \
+ -d 'username=ali&password=pass' | python3 -c "import sys,json;print(json.load(sys.stdin)["access_token"])")
 
-example.env
+# Create + list
+curl -s -X POST http://127.0.0.1:8000/todos -H "Authorization: Bearer $TOKEN" \
+ -H "Content-Type: application/json" -d '{"title":"Buy milk"}'
+curl -s -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/todos
 
-cat > example.env <<'ENV'
 
-copy to .env in production
+Configuration
 
-SECRET_KEY=change-this
+Environment variables (optional; defaults shown):
+SECRET_KEY=change-me-in-production
 DATABASE_URL=sqlite:///./app.db
-ENV
-
-Minimal CI
-
-mkdir -p .github/workflows
-cat > .github/workflows/ci.yml <<'YAML'
-name: ci
-on: [push, pull_request]
-jobs:
-build:
-runs-on: ubuntu-latest
-steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-python@v5
-with:
-python-version: "3.11"
-- run: python -m pip install -U pip
-- run: pip install -r requirements.txt
-- run: python -m py_compile main.py
-YAML
