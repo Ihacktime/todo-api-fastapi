@@ -32,8 +32,9 @@ curl -s -X POST http://127.0.0.1:8000/auth/register -H "Content-Type: applicatio
 
 # Login (get token)
 TOKEN=$(curl -s -X POST http://127.0.0.1:8000/auth/login \
- -H "Content-Type: application/x-www-form-urlencoded" \
- -d 'username=ali&password=pass' | python3 -c "import sys,json;print(json.load(sys.stdin)["access_token"])")
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d 'username=ali&password=pass' | python3 -c 'import sys,json;print(json.load(sys.stdin)["access_token"])')
+
 
 # Create + list
 curl -s -X POST http://127.0.0.1:8000/todos -H "Authorization: Bearer $TOKEN" \
